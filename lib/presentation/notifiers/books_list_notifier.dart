@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/app_config.dart';
 import '../../domain/entities/book_entity.dart';
+import '../providers/book_providers.dart';
 import '../providers/providers.dart';
 
 class BooksListState {
@@ -162,6 +163,8 @@ class BooksListNotifier extends StateNotifier<BooksListState> {
               )
               .toList(),
         );
+        _ref.invalidate(favoritesProvider);
+        _ref.invalidate(bookDetailsProvider(book.id));
       },
     );
   }

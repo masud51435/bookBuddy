@@ -46,7 +46,7 @@ cd bookbuddy
 flutter pub get
 
 # Generate code
-flutter pub run build_runner build --delete-conflicting-outputs
+dart run build_runner build --delete-conflicting-outputs
 
 # Run app
 flutter run
@@ -142,7 +142,7 @@ class MyWidget extends ConsumerWidget {
 **Google Books API v1**
 - Endpoint: `https://www.googleapis.com/books/v1`
 - Free tier: ~1000 requests/day
-- API Key in: `lib/config/app_config.dart`
+- API Key in: `lib/config/app_config.dart` (Replace with your own key for production)
 
 Query example:
 ```
@@ -179,11 +179,11 @@ Customize in `lib/config/flavors.dart`.
 
 Exception → Failure → UI flow:
 
-```
+```dart
 try {
   data = await api.fetchBooks()
 } on NetworkException catch (e) {
-  return Left(NetworkFailure(e.message));
+  return ResultFailure(NetworkFailure(e.message));
 }
 ```
 

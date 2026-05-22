@@ -127,8 +127,18 @@ class BookRepositoryImpl implements BookRepository {
   @override
   Future<Result<List<BookEntity>>> getFavorites() async {
     try {
-      await localDataSource.getFavorites();
-      return const Success([]);
+      final favoriteIds = await localDataSource.getFavorites();
+      final List<BookEntity> books = [];
+
+      for (final id in favoriteIds) {
+        final result = await getBookDetails(id);
+        result.fold(
+          (failure) => Logger.logError('Failed to load favorite book $id: ${failure.message}'),
+          (book) => books.add(book),
+        );
+      }
+
+      return Success(books);
     } on CacheException catch (e) {
       return ResultFailure(CacheFailure(e.message));
     } catch (e) {

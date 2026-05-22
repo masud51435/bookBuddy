@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../domain/entities/book_entity.dart';
 
 class BookCard extends StatelessWidget {
@@ -24,9 +25,9 @@ class BookCard extends StatelessWidget {
     return Container(
       margin: margin,
       child: Material(
-        color: Color(0xFFF5F6F6),
+        color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(18),
-        shadowColor: Colors.black.withValues(alpha: 0.3),
+        shadowColor: AppColors.overlay.withValues(alpha: 0.1),
         elevation: 2,
         child: InkWell(
           onTap: onTap,
@@ -58,7 +59,7 @@ class BookCard extends StatelessWidget {
                                       fontSize: 18,
                                       height: 1.15,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF17263C),
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -71,7 +72,7 @@ class BookCard extends StatelessWidget {
                                     style: const TextStyle(
                                       fontSize: 14,
                                       height: 1.25,
-                                      color: Color(0xFF5C6270),
+                                      color: AppColors.textSecondary,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -90,8 +91,8 @@ class BookCard extends StatelessWidget {
                                       : Icons.favorite_border_rounded,
                                   size: 30,
                                   color: book.isFavorite
-                                      ? Colors.redAccent
-                                      : Colors.grey[600],
+                                      ? AppColors.favorite
+                                      : AppColors.textTertiary,
                                 ),
                               ),
                             ),
@@ -120,20 +121,23 @@ class BookCard extends StatelessWidget {
       chips.add(
         _InfoChip(
           label: book.categories!.first.toUpperCase(),
-          backgroundColor: const Color(0xFFEAE7E2),
+          backgroundColor: AppColors.borderLight,
         ),
       );
     }
 
     if (_isNewRelease()) {
       chips.add(
-        const _InfoChip(label: 'NEW', backgroundColor: Color(0xFFDDE5FA)),
+        _InfoChip(
+          label: 'NEW',
+          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.12),
+        ),
       );
     } else if (book.publishedYear != null) {
       chips.add(
         _InfoChip(
           label: '${book.publishedYear}',
-          backgroundColor: const Color(0xFFDDE5FA),
+          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.12),
         ),
       );
     }
@@ -161,7 +165,7 @@ class _BookCover extends StatelessWidget {
     return Container(
       width: 112,
       decoration: BoxDecoration(
-        color: const Color(0xFFD89264),
+        color: AppColors.secondary,
         borderRadius: BorderRadius.circular(14),
       ),
       clipBehavior: Clip.antiAlias,
@@ -169,18 +173,18 @@ class _BookCover extends StatelessWidget {
         aspectRatio: 0.68,
         child: imageUrl == null || imageUrl!.isEmpty
             ? Container(
-                color: const Color(0xFFE7D4C4),
+                color: AppColors.secondaryLight.withValues(alpha: 0.2),
                 child: const Icon(
                   Icons.menu_book_rounded,
                   size: 38,
-                  color: Color(0xFF7C6E63),
+                  color: AppColors.secondary,
                 ),
               )
             : CachedNetworkImage(
                 imageUrl: imageUrl!,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: const Color(0xFFE7D4C4),
+                  color: AppColors.secondaryLight.withValues(alpha: 0.2),
                   child: const Center(
                     child: SizedBox(
                       width: 24,
@@ -190,11 +194,11 @@ class _BookCover extends StatelessWidget {
                   ),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: const Color(0xFFE7D4C4),
+                  color: AppColors.secondaryLight.withValues(alpha: 0.2),
                   child: const Icon(
                     Icons.menu_book_rounded,
                     size: 38,
-                    color: Color(0xFF7C6E63),
+                    color: AppColors.secondary,
                   ),
                 ),
               ),
@@ -223,7 +227,7 @@ class _InfoChip extends StatelessWidget {
           fontSize: 12,
           letterSpacing: 1.1,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF66625E),
+          color: AppColors.textSecondary,
         ),
       ),
     );
