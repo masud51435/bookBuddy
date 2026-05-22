@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'BookBuddy',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFF5F6F6)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
       routerConfig: appRoutes,
