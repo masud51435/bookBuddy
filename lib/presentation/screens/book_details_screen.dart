@@ -275,9 +275,9 @@ class _BookInfoCard extends StatelessWidget {
                   text: book.authors.isEmpty
                       ? 'Unknown author'
                       : book.authors.join(', '),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimary.withValues(alpha: 0.7),
                   ),
                 ),
               ],
