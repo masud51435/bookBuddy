@@ -48,6 +48,7 @@ class GoogleBooksRemoteDataSourceImpl implements GoogleBooksRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
+        Logger.logDebug('✅ Books Response: ${response.data}');
         final model = SearchResponseModel.fromJson(
           response.data as Map<String, dynamic>,
         );
@@ -87,6 +88,7 @@ class GoogleBooksRemoteDataSourceImpl implements GoogleBooksRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
+        Logger.logDebug('✅ Search Response: ${response.data}');
         return SearchResponseModel.fromJson(
           response.data as Map<String, dynamic>,
         );
@@ -114,6 +116,7 @@ class GoogleBooksRemoteDataSourceImpl implements GoogleBooksRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
+        Logger.logDebug('✅ Book Details Response: ${response.data}');
         return BookModel.fromJson(response.data as Map<String, dynamic>);
       } else {
         throw ServerException(
@@ -132,15 +135,19 @@ class GoogleBooksRemoteDataSourceImpl implements GoogleBooksRemoteDataSource {
     return switch (e.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.receiveTimeout ||
-      DioExceptionType.sendTimeout =>
-        TimeoutException('Connection timed out. Please try again.'),
+      DioExceptionType.sendTimeout => TimeoutException(
+        'Connection timed out. Please try again.',
+      ),
       DioExceptionType.badResponse => ServerException(
         e.response?.data?['error']?['message'] ?? 'Server error occurred',
         statusCode: e.response?.statusCode,
       ),
-      DioExceptionType.connectionError =>
-        NetworkException('No internet connection. Please check your network.'),
-      _ => NetworkException('Please check your internet connection and try again.'),
+      DioExceptionType.connectionError => NetworkException(
+        'No internet connection. Please check your network.',
+      ),
+      _ => NetworkException(
+        'Please check your internet connection and try again.',
+      ),
     };
   }
 }

@@ -95,16 +95,6 @@ class ShimmerBookCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  // Rating
-                  Container(
-                    height: 13,
-                    width: 80,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFCCCFD3),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
                 ],
               ),
             ),
