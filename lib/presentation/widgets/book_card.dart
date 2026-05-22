@@ -27,7 +27,7 @@ class BookCard extends StatelessWidget {
       child: Material(
         color: AppColors.bgSecondary,
         borderRadius: BorderRadius.circular(18),
-        shadowColor: AppColors.overlay.withValues(alpha: 0.1),
+        shadowColor: AppColors.overlay.withValues(alpha: 0.25),
         elevation: 2,
         child: InkWell(
           onTap: onTap,
