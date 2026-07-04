@@ -4,9 +4,12 @@ import '../../domain/entities/book_entity.dart';
 import 'providers.dart';
 
 // Pagination state
-final pageProvider = StateProvider((ref) => 1);
+final pageProvider = StateProvider((ref) {
+  ref.watch(searchQueryProvider);
+  return 1;
+});
 
-final searchQueryProvider = StateProvider((ref) => '');
+final searchQueryProvider = StateProvider<String>((ref) => '');
 
 final isSearchingProvider = StateProvider((ref) => false);
 
@@ -73,14 +76,32 @@ final favoritesProvider = FutureProvider.autoDispose<List<BookEntity>>((
 });
 
 // Current books with search filter
-final currentBooksProvider = FutureProvider.autoDispose<List<BookEntity>>((
-  ref,
-) async {
-  final isSearching = ref.watch(isSearchingProvider);
+final currentBooksProvider =
+    Provider.autoDispose<AsyncValue<List<BookEntity>>>((ref) {
+      final isSearching = ref.watch(isSearchingProvider);
 
-  if (isSearching) {
-    return await ref.watch(searchResultsProvider.future);
-  } else {
-    return await ref.watch(booksProvider.future);
-  }
+      if (isSearching) {
+        return ref.watch(searchResultsProvider);
+      } else {
+        return ref.watch(booksProvider);
+      }
+    });
+
+// Toggle favorite provider
+final toggleFavoriteProvider = Provider((ref) {
+  return (BookEntity book) async {
+    final result = book.isFavorite
+        ? await ref.read(removeFavoriteUsecaseProvider)(book.id)
+        : await ref.read(addFavoriteUsecaseProvider)(book.id);
+
+    result.fold(
+      (failure) => null,
+      (_) {
+        ref.invalidate(favoritesProvider);
+        ref.invalidate(bookDetailsProvider(book.id));
+        ref.invalidate(booksProvider);
+        ref.invalidate(searchResultsProvider);
+      },
+    );
+  };
 });
