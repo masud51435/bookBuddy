@@ -112,7 +112,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
     if (book.isFavorite) {
       await ref.read(removeFavoriteUsecaseProvider)(book.id);
     } else {
-      await ref.read(addFavoriteUsecaseProvider)(book.id);
+      await ref.read(addFavoriteUsecaseProvider)(book);
     }
 
     if (!mounted) {
