@@ -1,3 +1,4 @@
+import '../entities/book_entity.dart';
 import '../repositories/book_repository.dart';
 
 class AddFavoriteUsecase {
@@ -5,7 +6,7 @@ class AddFavoriteUsecase {
 
   AddFavoriteUsecase(this.repository);
 
-  Future<Result<void>> call(String bookId) async {
-    return repository.addFavorite(bookId);
+  Future<Result<void>> call(BookEntity book) async {
+    return repository.addFavorite(book);
   }
 }
