@@ -1,5 +1,6 @@
 import '../datasources/remote/google_books_remote_datasource_impl.dart';
 import '../datasources/local/favorites_local_datasource_impl.dart';
+import '../models/book_model.dart';
 import '../../core/errors/failures.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/utils/logger.dart';
@@ -27,7 +28,7 @@ class BookRepositoryImpl implements BookRepository {
       );
 
       final favorites = await localDataSource.getFavorites();
-      final favSet = favorites.toSet();
+      final favSet = favorites.map((e) => e['id'] as String).toSet();
 
       final books = responses
           .expand((response) => response.items ?? [])
@@ -58,14 +59,28 @@ class BookRepositoryImpl implements BookRepository {
       final isFav = await localDataSource.isFavorite(bookId);
       return Success(bookModel.toEntity(isFavorite: isFav));
     } on ServerException catch (e) {
-      return ResultFailure(ServerFailure(e.message, statusCode: e.statusCode));
+      return _tryGetLocalBook(bookId, ServerFailure(e.message, statusCode: e.statusCode));
     } on TimeoutException catch (e) {
-      return ResultFailure(TimeoutFailure(e.message));
+      return _tryGetLocalBook(bookId, TimeoutFailure(e.message));
     } on NetworkException catch (e) {
-      return ResultFailure(NetworkFailure(e.message));
+      return _tryGetLocalBook(bookId, NetworkFailure(e.message));
     } catch (e) {
-      return ResultFailure(UnknownFailure('Failed to fetch book details: $e'));
+      return _tryGetLocalBook(bookId, UnknownFailure('Failed to fetch book details: $e'));
     }
+  }
+
+  Future<Result<BookEntity>> _tryGetLocalBook(String bookId, Failure failure) async {
+    try {
+      final isFav = await localDataSource.isFavorite(bookId);
+      if (isFav) {
+        final favorites = await localDataSource.getFavorites();
+        final bookMap = favorites.firstWhere((map) => map['id'] == bookId);
+        return Success(BookModel.fromJson(bookMap).toEntity(isFavorite: true));
+      }
+    } catch (_) {
+      // Ignore local fetch error and return original failure
+    }
+    return ResultFailure(failure);
   }
 
   @override
@@ -82,7 +97,7 @@ class BookRepositoryImpl implements BookRepository {
       );
 
       final favorites = await localDataSource.getFavorites();
-      final favSet = favorites.toSet();
+      final favSet = favorites.map((e) => e['id'] as String).toSet();
 
       final books = (response.items ?? [])
           .map((model) => model.toEntity(isFavorite: favSet.contains(model.id)))
@@ -101,9 +116,10 @@ class BookRepositoryImpl implements BookRepository {
   }
 
   @override
-  Future<Result<void>> addFavorite(String bookId) async {
+  Future<Result<void>> addFavorite(BookEntity book) async {
     try {
-      await localDataSource.addFavorite(bookId);
+      final model = BookModel.fromEntity(book);
+      await localDataSource.addFavorite(model.toJson());
       return const Success(null);
     } on CacheException catch (e) {
       return ResultFailure(CacheFailure(e.message));
@@ -127,16 +143,10 @@ class BookRepositoryImpl implements BookRepository {
   @override
   Future<Result<List<BookEntity>>> getFavorites() async {
     try {
-      final favoriteIds = await localDataSource.getFavorites();
-      final List<BookEntity> books = [];
-
-      for (final id in favoriteIds) {
-        final result = await getBookDetails(id);
-        result.fold(
-          (failure) => Logger.logError('Failed to load favorite book $id: ${failure.message}'),
-          (book) => books.add(book),
-        );
-      }
+      final favoriteMaps = await localDataSource.getFavorites();
+      final books = favoriteMaps
+          .map((map) => BookModel.fromJson(map).toEntity(isFavorite: true))
+          .toList();
 
       return Success(books);
     } on CacheException catch (e) {
