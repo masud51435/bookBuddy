@@ -1,18 +1,19 @@
+import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/errors/exceptions.dart';
 import '../../../core/utils/logger.dart';
 
 abstract class FavoritesLocalDataSource {
-  Future<void> addFavorite(String bookId);
+  Future<void> addFavorite(Map<String, dynamic> bookMap);
   Future<void> removeFavorite(String bookId);
   Future<bool> isFavorite(String bookId);
-  Future<List<String>> getFavorites();
+  Future<List<Map<String, dynamic>>> getFavorites();
   Future<void> clear();
 }
 
 class FavoritesLocalDataSourceImpl implements FavoritesLocalDataSource {
   static const String _boxName = 'favorites';
-  static Box<String>? _box;
+  static Box? _box;
   static bool _isInitializing = false;
 
   Future<void> _ensureInitialized() async {
@@ -30,9 +31,9 @@ class FavoritesLocalDataSourceImpl implements FavoritesLocalDataSource {
     _isInitializing = true;
     try {
       if (!Hive.isBoxOpen(_boxName)) {
-        _box = await Hive.openBox<String>(_boxName);
+        _box = await Hive.openBox(_boxName);
       } else {
-        _box = Hive.box<String>(_boxName);
+        _box = Hive.box(_boxName);
       }
       Logger.logInfo('Favorites box initialized');
     } catch (e) {
@@ -48,11 +49,12 @@ class FavoritesLocalDataSourceImpl implements FavoritesLocalDataSource {
   }
 
   @override
-  Future<void> addFavorite(String bookId) async {
+  Future<void> addFavorite(Map<String, dynamic> bookMap) async {
     try {
       await _ensureInitialized();
-      await _box!.put(bookId, bookId);
-      Logger.logDebug('Added book $bookId to favorites');
+      final id = bookMap['id'];
+      await _box!.put(id, jsonEncode(bookMap));
+      Logger.logDebug('Added book $id to favorites');
     } catch (e) {
       throw CacheException('Failed to add favorite: $e');
     }
@@ -80,10 +82,12 @@ class FavoritesLocalDataSourceImpl implements FavoritesLocalDataSource {
   }
 
   @override
-  Future<List<String>> getFavorites() async {
+  Future<List<Map<String, dynamic>>> getFavorites() async {
     try {
       await _ensureInitialized();
-      return _box!.values.toList();
+      return _box!.values
+          .map((e) => jsonDecode(e as String) as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       throw CacheException('Failed to get favorites: $e');
     }
