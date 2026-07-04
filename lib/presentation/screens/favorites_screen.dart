@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../data/models/book_model.dart';
 import '../../domain/entities/book_entity.dart';
 import '../providers/book_providers.dart';
 import '../providers/providers.dart';
@@ -17,10 +19,10 @@ class FavoritesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: ValueListenableBuilder<Box<String>>(
-        valueListenable: Hive.box<String>('favorites').listenable(),
+      body: ValueListenableBuilder<Box>(
+        valueListenable: Hive.box('favorites').listenable(),
         builder: (context, favoriteBox, _) {
-          final favoriteIds = favoriteBox.values.toList().reversed.toList();
+          final favoriteItems = favoriteBox.values.toList().reversed.toList();
 
           return CustomScrollView(
             slivers: [
@@ -28,10 +30,10 @@ class FavoritesScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 18),
-                  child: _FavoritesIntro(count: favoriteIds.length),
+                  child: _FavoritesIntro(count: favoriteItems.length),
                 ),
               ),
-              if (favoriteIds.isEmpty)
+              if (favoriteItems.isEmpty)
                 const SliverFillRemaining(
                   hasScrollBody: false,
                   child: EmptyWidget(
@@ -50,14 +52,45 @@ class FavoritesScreen extends ConsumerWidget {
                           childAspectRatio: 0.64,
                         ),
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      final bookId = favoriteIds[index];
-                      return _FavoriteBookTile(bookId: bookId);
-                    }, childCount: favoriteIds.length),
+                      final item = favoriteItems[index];
+                      // Handle migration or different data types
+                      if (item is String) {
+                        try {
+                          final map = jsonDecode(item) as Map<String, dynamic>;
+                          final book = BookModel.fromJson(map).toEntity(isFavorite: true);
+                          return _FavoriteBookCard(
+                            book: book,
+                            onTap: () => context.push('/book-details', extra: book.id),
+                            onRemoveTap: () => _removeFavorite(context, ref, book.id),
+                          );
+                        } catch (e) {
+                          // Fallback for old ID-only data if any
+                          return _FavoriteBookTile(bookId: item);
+                        }
+                      }
+                      return const SizedBox.shrink();
+                    }, childCount: favoriteItems.length),
                   ),
                 ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Future<void> _removeFavorite(BuildContext context, WidgetRef ref, String bookId) async {
+    await ref.read(removeFavoriteUsecaseProvider)(bookId);
+    ref.invalidate(bookDetailsProvider(bookId));
+
+    if (!context.mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Removed from favorites'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
