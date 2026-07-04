@@ -145,7 +145,7 @@ class BooksListNotifier extends StateNotifier<BooksListState> {
   Future<void> toggleFavorite(BookEntity book) async {
     final result = book.isFavorite
         ? await _ref.read(removeFavoriteUsecaseProvider)(book.id)
-        : await _ref.read(addFavoriteUsecaseProvider)(book.id);
+        : await _ref.read(addFavoriteUsecaseProvider)(book);
 
     result.fold(
       (failure) {
