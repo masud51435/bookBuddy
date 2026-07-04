@@ -18,6 +18,29 @@ class BookModel {
 
   Map<String, dynamic> toJson() => _$BookModelToJson(this);
 
+  factory BookModel.fromEntity(BookEntity entity) {
+    return BookModel(
+      id: entity.id,
+      volumeInfo: VolumeInfo(
+        title: entity.title,
+        subtitle: entity.subtitle,
+        authors: entity.authors,
+        description: entity.description,
+        imageLinks: ImageLinks(thumbnail: entity.imageUrl),
+        publishedDate: entity.publishedDate,
+        publisher: entity.publisher,
+        categories: entity.categories,
+        averageRating: entity.averageRating,
+        ratingsCount: entity.ratingsCount,
+        language: entity.language,
+        pageCount: entity.pageCount,
+        printType: entity.printType,
+        previewLink: entity.previewLink,
+        infoLink: entity.infoLink,
+      ),
+    );
+  }
+
   BookEntity toEntity({bool isFavorite = false}) {
     return BookEntity(
       id: id,
