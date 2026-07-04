@@ -92,7 +92,7 @@ final toggleFavoriteProvider = Provider((ref) {
   return (BookEntity book) async {
     final result = book.isFavorite
         ? await ref.read(removeFavoriteUsecaseProvider)(book.id)
-        : await ref.read(addFavoriteUsecaseProvider)(book.id);
+        : await ref.read(addFavoriteUsecaseProvider)(book);
 
     result.fold(
       (failure) => null,
