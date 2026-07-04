@@ -40,7 +40,7 @@ abstract class BookRepository {
     required int pageSize,
   });
 
-  Future<Result<void>> addFavorite(String bookId);
+  Future<Result<void>> addFavorite(BookEntity book);
 
   Future<Result<void>> removeFavorite(String bookId);
 
